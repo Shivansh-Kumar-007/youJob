@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${montserrat.variable} min-h-full bg-[var(--color-background)] font-sans text-[var(--color-on-background)] antialiased`}
+        className={`${montserrat.variable} min-h-full bg-(--color-background) font-sans text-(--color-on-background) antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

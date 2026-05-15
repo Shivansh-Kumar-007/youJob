@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "youJob",
   shortName: "youJob",
-  tagline: "EASY AS B*****B",
+  tagline: "Let AI work for You",
   description:
     "Find high-signal remote jobs with youJob. Upload your CV and let our AI engine hunt for roles that match your career. No more board scrolling, just ranked opportunities.",
   url:

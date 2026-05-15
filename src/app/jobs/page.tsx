@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { mockJobs } from "@/lib/mock-jobs";
 import { absoluteUrl } from "@/lib/site";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Ranked Jobs",
@@ -13,26 +11,93 @@ export const metadata: Metadata = {
   },
 };
 
+// Mock stats data - replace with real Prisma queries when DB is configured
+const mockStats = {
+  totalJobs: 12543,
+  activeUsers: 1847,
+  paidUsers: 342,
+  agentsRunning: 23,
+};
+
 export default function JobsPage() {
   return (
     <main className="page-shell py-10 md:py-14">
-      <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-3">
-          <p className="label">Ranked opportunities</p>
-          <h1 className="section-title">Personalized matches for your profile</h1>
-          <p className="max-w-2xl text-[var(--color-on-surface-variant)]">
-            Your first search runs live. After that, the catalog improves with
-            every validated role and every completed application.
-          </p>
+      {/* Live Signal Stats Header */}
+      <header className="mb-12">
+        <div className="mb-6 flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full bg-green-500"></div>
+          <p className="label font-mono tracking-widest">LIVE_SIGNAL</p>
         </div>
-        <div className="flex gap-3">
-          <Button>Run Fresh Search</Button>
-          <Button variant="secondary">Upload Updated CV</Button>
+        <div className="mb-8 h-1 w-full bg-(--color-surface-variant)"></div>
+
+        {/* Stats Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Jobs in DB */}
+          <div className="panel rounded-xl p-6">
+            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
+              Jobs in DB
+            </p>
+            <p className="mt-3 text-4xl font-bold text-(--color-primary)">
+              {mockStats.totalJobs.toLocaleString()}
+            </p>
+            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
+              Total indexed
+            </p>
+          </div>
+
+          {/* Active Users */}
+          <div className="panel rounded-xl p-6">
+            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
+              Active Users
+            </p>
+            <p className="mt-3 text-4xl font-bold text-(--color-primary)">
+              {mockStats.activeUsers.toLocaleString()}
+            </p>
+            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
+              Last 30 days
+            </p>
+          </div>
+
+          {/* Paid Users */}
+          <div className="panel rounded-xl p-6">
+            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
+              Paid Users
+            </p>
+            <p className="mt-3 bg-linear-to-r from-amber-400 to-orange-400 bg-clip-text text-4xl font-bold text-transparent">
+              {mockStats.paidUsers.toLocaleString()}
+            </p>
+            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
+              PRO tier
+            </p>
+          </div>
+
+          {/* Live Agents */}
+          <div className="panel rounded-xl p-6">
+            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
+              Agents Running
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <p className="text-4xl font-bold text-green-500">
+                {mockStats.agentsRunning}
+              </p>
+              {mockStats.agentsRunning > 0 && (
+                <span className="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
+              Live processing
+            </p>
+          </div>
         </div>
       </header>
 
+      {/* Section Title */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold">Ranked opportunities</h2>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="panel h-fit rounded-[var(--radius-xl)] p-6">
+        <aside className="panel h-fit rounded-xl p-6">
           <h2 className="mb-5 text-xl font-semibold">Filters</h2>
           <div className="space-y-5">
             {[
@@ -44,7 +109,7 @@ export default function JobsPage() {
               <div key={label}>
                 <label className="label mb-2 block">{label}</label>
                 <input
-                  className="w-full rounded-[var(--radius)] border border-[color:rgba(64,73,68,0.2)] bg-white px-4 py-3 outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[color:rgba(43,105,84,0.1)]"
+                  className="w-full rounded border border-[rgba(64,73,68,0.2)] bg-white px-4 py-3 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-[rgba(43,105,84,0.1)]"
                   placeholder={placeholder}
                 />
               </div>
@@ -52,57 +117,19 @@ export default function JobsPage() {
           </div>
         </aside>
 
-        <section className="space-y-4">
-          {mockJobs.map((job, index) => (
-            <article
-              key={job.slug}
-              className="panel rounded-[var(--radius-xl)] px-6 py-6 transition duration-200 hover:scale-[1.01]"
-            >
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[var(--color-primary-fixed)] px-3 py-1 text-xs font-semibold text-[var(--color-on-primary-fixed)]">
-                      Match #{index + 1}
-                    </span>
-                    {job.premium ? (
-                      <span className="rounded-full bg-[var(--color-tertiary-fixed-dim)] px-3 py-1 text-xs font-semibold text-[var(--color-on-tertiary-fixed)]">
-                        Premium
-                      </span>
-                    ) : null}
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-semibold tracking-[-0.02em]">
-                      <Link href={`/jobs/${job.slug}`}>{job.title}</Link>
-                    </h2>
-                    <p className="mt-1 text-sm text-[var(--color-on-surface-variant)]">
-                      {job.company} · {job.location} · {job.salary}
-                    </p>
-                  </div>
-                  <p className="max-w-3xl text-[var(--color-on-surface-variant)]">
-                    {job.summary}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {job.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full bg-[var(--color-surface-container)] px-3 py-1 text-xs font-medium text-[var(--color-on-surface-variant)]"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex min-w-[180px] flex-col gap-3">
-                  <Link href={`/jobs/${job.slug}`}>
-                    <Button className="w-full">Review Role</Button>
-                  </Link>
-                  <Button variant="secondary" className="w-full">
-                    Open Source Page
-                  </Button>
-                </div>
-              </div>
-            </article>
-          ))}
+        <section>
+          <div className="space-y-4 rounded-xl border border-(--color-surface-variant) p-8 text-center">
+            <p className="text-lg font-semibold text-(--color-on-surface-variant)">
+              Job listings will appear here
+            </p>
+            <p className="text-sm text-(--color-on-surface-variant)">
+              Browse ranked jobs matching your profile
+            </p>
+            <div className="flex justify-center gap-3 pt-4">
+              <Button>Run Fresh Search</Button>
+              <Button variant="secondary">Upload Updated CV</Button>
+            </div>
+          </div>
         </section>
       </div>
     </main>

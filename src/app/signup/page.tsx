@@ -27,7 +27,9 @@ export default function SignupPage() {
             search flow stays disciplined.
           </p>
           <div className="panel rounded-[var(--radius-lg)] p-6">
-            <h2 className="mb-4 text-xl font-semibold">What you&apos;ll set up</h2>
+            <h2 className="mb-4 text-xl font-semibold">
+              What you&apos;ll set up
+            </h2>
             <ul className="space-y-4 text-[var(--color-on-surface-variant)]">
               <li>CV upload and parsing</li>
               <li>Target title and seniority</li>
@@ -52,7 +54,7 @@ export default function SignupPage() {
             </div>
             <div>
               <label className="label mb-2 block" htmlFor="email">
-                Work Email
+                Email
               </label>
               <input
                 id="email"

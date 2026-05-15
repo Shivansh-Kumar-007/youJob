@@ -46,14 +46,14 @@ export default function HomeClient() {
   const xRight = useTransform(sectionProgress, [0, 0.5], [50, 0]);
 
   return (
-    <main className="overflow-x-hidden bg-white selection:bg-[var(--color-accent-yellow)] selection:text-black">
+    <main className="overflow-x-hidden bg-white selection:bg-(--color-accent-yellow) selection:text-black">
       {/* Hero Section - Consolidated to one page */}
-      <section className="page-shell flex h-screen min-h-[800px] flex-col py-6">
+      <section className="page-shell flex h-screen min-h-200 flex-col py-6">
         <header className="relative flex flex-1 flex-col gap-6 overflow-hidden border-[6px] border-black bg-white px-6 py-6 md:px-12 md:py-10">
           <motion.div
             animate={{ rotate: [0, 5, 0], scale: [1, 1.1, 1] }}
             transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="pointer-events-none absolute -top-20 -right-20 h-96 w-96 rounded-full bg-[var(--color-accent-yellow)] opacity-10 blur-3xl"
+            className="pointer-events-none absolute -top-20 -right-20 h-96 w-96 rounded-full bg-(--color-accent-yellow) opacity-10 blur-3xl"
           />
 
           <nav className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
@@ -89,14 +89,8 @@ export default function HomeClient() {
               className="flex flex-wrap items-center gap-8 text-sm font-[1000] tracking-widest text-black uppercase"
             >
               <Link
-                href="/jobs"
-                className="px-2 transition-colors hover:bg-black hover:text-[var(--color-accent-yellow)]"
-              >
-                Jobs
-              </Link>
-              <Link
                 href="/pricing"
-                className="px-2 transition-colors hover:bg-black hover:text-[var(--color-accent-yellow)]"
+                className="px-2 transition-colors hover:bg-black hover:text-(--color-accent-yellow)"
               >
                 Pricing
               </Link>
@@ -106,7 +100,7 @@ export default function HomeClient() {
               >
                 <span className="relative z-10">Get Started</span>
                 <motion.div
-                  className="absolute inset-0 bg-[var(--color-accent-yellow)]"
+                  className="absolute inset-0 bg-(--color-accent-yellow)"
                   initial={{ y: "100%" }}
                   whileHover={{ y: 0 }}
                   transition={{ type: "tween" }}
@@ -127,7 +121,7 @@ export default function HomeClient() {
                   <motion.span
                     whileHover={{ scale: 1.1, rotate: -2 }}
                     key={s}
-                    className="cursor-default border-[3px] border-black bg-white px-3 py-1 text-[10px] font-[900] tracking-tighter uppercase transition-colors hover:bg-[var(--color-accent-yellow)]"
+                    className="cursor-default border-[3px] border-black bg-white px-3 py-1 text-[10px] font-black tracking-tighter uppercase transition-colors hover:bg-(--color-accent-yellow)"
                   >
                     {s}
                   </motion.span>
@@ -139,7 +133,7 @@ export default function HomeClient() {
                 className="max-w-4xl text-[clamp(2.5rem,10vw,7.5rem)] leading-[0.8] font-[1000] tracking-[-0.08em] text-black uppercase italic"
               >
                 Get Hired <br />
-                <span className="text-[var(--color-accent-yellow)]">
+                <span className="text-(--color-accent-yellow)">
                   Faster.
                 </span>{" "}
                 <br />
@@ -158,7 +152,7 @@ export default function HomeClient() {
                 <div className="flex flex-wrap gap-6">
                   <Button
                     size="lg"
-                    className="h-16 rounded-none bg-black px-12 text-xl font-[1000] tracking-[-0.05em] text-white uppercase italic shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] transition-all hover:scale-105 hover:bg-[var(--color-accent-yellow)] hover:text-black hover:shadow-none active:scale-95"
+                    className="h-16 rounded-none bg-black px-12 text-xl font-[1000] tracking-tighter text-white uppercase italic shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] transition-all hover:scale-105 hover:bg-(--color-accent-yellow) hover:text-black hover:shadow-none active:scale-95"
                   >
                     Upload CV →
                   </Button>
@@ -166,7 +160,7 @@ export default function HomeClient() {
                     <Button
                       variant="ghost"
                       size="lg"
-                      className="h-16 rounded-none border-[6px] border-black px-12 text-xl font-[1000] tracking-[-0.05em] text-black uppercase italic transition-all hover:scale-105 hover:bg-black hover:text-white"
+                      className="h-16 rounded-none border-[6px] border-black px-12 text-xl font-[1000] tracking-tighter text-black uppercase italic transition-all hover:scale-105 hover:bg-black hover:text-white"
                     >
                       Explore
                     </Button>
@@ -189,9 +183,9 @@ export default function HomeClient() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="relative ml-auto max-w-md border-[6px] border-black bg-white p-8 shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]"
+                className="relative ml-auto max-w-md border-[6px] border-black bg-white p-6 shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]"
               >
-                <div className="mb-8 flex items-center justify-between border-b-[4px] border-black pb-4">
+                <div className="mb-4 flex items-center justify-between border-b-4 border-black pb-4">
                   <motion.p
                     animate={{ opacity: [1, 0.5, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
@@ -199,24 +193,76 @@ export default function HomeClient() {
                   >
                     ● LIVE_SIGNAL
                   </motion.p>
+                  <Link
+                    href="/jobs"
+                    className="text-xs font-[700] text-(--color-accent-yellow) uppercase"
+                  >
+                    View all
+                  </Link>
                 </div>
-                <div className="space-y-8">
+
+                <div className="space-y-6">
                   {mockJobs.slice(0, 2).map((job, idx) => (
                     <motion.article
                       key={job.slug}
                       initial={{ x: 30, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 1 + idx * 0.3 }}
-                      className="group cursor-pointer"
+                      transition={{ delay: 1 + idx * 0.2 }}
+                      className="group flex flex-col gap-2"
                     >
-                      <h2 className="inline-block text-2xl font-[1000] tracking-tighter uppercase italic transition-colors group-hover:bg-[var(--color-accent-yellow)]">
-                        {job.title}
-                      </h2>
-                      <p className="mt-2 text-[12px] font-black tracking-tight text-black/60 uppercase">
-                        {job.company}{" "}
-                        <span className="mx-1 text-[var(--color-accent-yellow)]"></span>{" "}
-                        {job.location}
+                      <div className="flex items-start justify-between">
+                        <Link
+                          href={`/jobs/${job.slug}`}
+                          className="inline-block"
+                        >
+                          <h3 className="text-lg font-[1000] tracking-tighter uppercase italic group-hover:text-(--color-accent-yellow)">
+                            {job.title}
+                          </h3>
+                        </Link>
+                        {job.premium && (
+                          <span className="ml-2 rounded bg-amber-400 px-2 py-1 text-xs font-bold uppercase">
+                            Premium
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[12px] font-black tracking-tight text-black/60 uppercase">
+                        {job.company} <span className="mx-1">•</span>{" "}
+                        {job.location} <span className="mx-1">•</span>{" "}
+                        {job.locationType}
                       </p>
+
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-(--color-accent-yellow)">
+                          {job.salary}
+                        </p>
+                        <p className="text-xs text-(--color-on-surface-variant) uppercase">
+                          {job.postedAt}
+                        </p>
+                      </div>
+
+                      <p className="text-sm text-(--color-on-surface-variant)">
+                        {job.summary}
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {job.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-(--color-surface-container) px-2 py-1 text-xs font-medium text-(--color-on-surface-variant)"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="pt-2">
+                        <Link href={`/jobs/${job.slug}`}>
+                          <Button size="sm" className="rounded-none">
+                            View
+                          </Button>
+                        </Link>
+                      </div>
                     </motion.article>
                   ))}
                 </div>
@@ -243,7 +289,7 @@ export default function HomeClient() {
                 <motion.div
                   animate={{ scale: [1, 1.2, 1], rotate: 45 }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="h-6 w-6 bg-[var(--color-accent-yellow)]"
+                  className="h-6 w-6 bg-(--color-accent-yellow)"
                 />
               </span>
             ))}
@@ -261,7 +307,7 @@ export default function HomeClient() {
               viewport={{ once: true }}
               whileHover={{ y: -10, backgroundColor: "#facc15" }}
               key={step.title}
-              className="group relative overflow-hidden border-[4px] border-black bg-white p-8 transition-all duration-300"
+              className="group relative overflow-hidden border-4 border-black bg-white p-8 transition-all duration-300"
             >
               <span className="absolute -top-4 -right-2 text-8xl font-[1000] italic opacity-5 transition-opacity group-hover:opacity-10">
                 0{index + 1}
@@ -283,11 +329,11 @@ export default function HomeClient() {
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
-          className="flex flex-col overflow-hidden border-[8px] border-black bg-white md:flex-row"
+          className="flex flex-col overflow-hidden border-8 border-black bg-white md:flex-row"
         >
           <motion.div
             style={{ x: xLeft }}
-            className="min-w-0 flex-1 border-b-[8px] border-black bg-[var(--color-accent-yellow)] p-12 md:border-r-[8px] md:border-b-0 md:p-16"
+            className="min-w-0 flex-1 border-b-8 border-black bg-(--color-accent-yellow) p-12 md:border-r-8 md:border-b-0 md:p-16"
           >
             <h2 className="mb-10 text-6xl leading-[0.75] font-[1000] tracking-[-0.08em] uppercase italic md:text-7xl">
               THE SEARCH <br />{" "}
@@ -314,7 +360,7 @@ export default function HomeClient() {
               <motion.div
                 key={i}
                 whileHover={{ scale: 1.05, zIndex: 10 }}
-                className="flex items-center justify-center border-r border-b border-white/10 p-6 text-center text-base leading-none font-[1000] break-words text-white uppercase italic transition-colors hover:bg-[var(--color-accent-yellow)] hover:text-black md:p-8"
+                className="flex items-center justify-center border-r border-b border-white/10 p-6 text-center text-base leading-none font-[1000] wrap-break-word text-white uppercase italic transition-colors hover:bg-(--color-accent-yellow) hover:text-black md:p-8"
               >
                 {f}
               </motion.div>

@@ -49,11 +49,11 @@ export default async function JobDetailPage({ params }: PageProps) {
   return (
     <main className="page-shell py-10 md:py-14">
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        <article className="panel rounded-[var(--radius-xl)] px-6 py-8 md:px-8">
-          <div className="mb-8 space-y-4 border-b border-[var(--color-surface-variant)] pb-8">
+        <article className="panel rounded-xl px-6 py-8 md:px-8">
+          <div className="mb-8 space-y-4 border-b border-(--color-surface-variant) pb-8">
             <Link
               href="/jobs"
-              className="label inline-flex items-center gap-2 text-[var(--color-primary)]"
+              className="label inline-flex items-center gap-2 text-(--color-primary)"
             >
               Back to ranked jobs
             </Link>
@@ -61,15 +61,21 @@ export default async function JobDetailPage({ params }: PageProps) {
               <h1 className="text-[clamp(2rem,4vw,3.25rem)] leading-[1.15] font-bold tracking-[-0.02em]">
                 {job.title}
               </h1>
-              <p className="mt-3 text-lg text-[var(--color-on-surface-variant)]">
-                {job.company} <span className="mx-1 text-[var(--color-accent-yellow)]">//</span> {job.location} <span className="mx-1 text-[var(--color-accent-yellow)]">//</span> {job.locationType} <span className="mx-1 text-[var(--color-accent-yellow)]">//</span> {job.salary}
+              <p className="mt-3 text-lg text-(--color-on-surface-variant)">
+                {job.company}{" "}
+                <span className="mx-1 text-(--color-accent-yellow)">•</span>{" "}
+                {job.location}{" "}
+                <span className="mx-1 text-(--color-accent-yellow)">•</span>{" "}
+                {job.locationType}{" "}
+                <span className="mx-1 text-(--color-accent-yellow)">•</span>{" "}
+                {job.salary}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {job.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full bg-[var(--color-surface-container)] px-3 py-1 text-xs font-medium text-[var(--color-on-surface-variant)]"
+                  className="rounded-full bg-(--color-surface-container) px-3 py-1 text-xs font-medium text-(--color-on-surface-variant)"
                 >
                   {tag}
                 </span>
@@ -81,7 +87,7 @@ export default async function JobDetailPage({ params }: PageProps) {
             {job.description.map((paragraph) => (
               <p
                 key={paragraph}
-                className="text-base leading-8 text-[var(--color-on-surface-variant)]"
+                className="text-base leading-8 text-(--color-on-surface-variant)"
               >
                 {paragraph}
               </p>
@@ -90,9 +96,9 @@ export default async function JobDetailPage({ params }: PageProps) {
         </article>
 
         <aside className="space-y-4">
-          <div className="panel rounded-[var(--radius-xl)] p-6">
+          <div className="panel rounded-xl p-6">
             <p className="label mb-3">Application</p>
-            <p className="mb-5 text-sm leading-7 text-[var(--color-on-surface-variant)]">
+            <p className="mb-5 text-sm leading-7 text-(--color-on-surface-variant)">
               Open the original source page, then store the action in your
               application history once services are connected.
             </p>
@@ -103,9 +109,9 @@ export default async function JobDetailPage({ params }: PageProps) {
               </Button>
             </div>
           </div>
-          <div className="panel rounded-[var(--radius-xl)] p-6">
+          <div className="panel rounded-xl p-6">
             <p className="label mb-3">Posted</p>
-            <p className="text-sm text-[var(--color-on-surface-variant)]">
+            <p className="text-sm text-(--color-on-surface-variant)">
               {job.postedAt}
             </p>
           </div>
