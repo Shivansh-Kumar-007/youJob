@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PlanTier {
+  FREE
+  PRO
+}
+
+enum ApplicationStatus {
+  CLICKED
+  APPLIED
+  SAVED
+  DISMISSED
+}
+
+enum SearchRunType {
+  FREE_INITIAL
+  PAID_DEEP
+}
+
+enum SearchRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String           @unique @db.VarChar(255)
+  fullName        String?          @db.VarChar(255)
+  planTier        PlanTier         @default(FREE)
+  dailyApplyLimit Int              @default(5)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  profile         UserProfile?
+  applications    JobApplication[]
+  searchRuns      SearchRun[]
+
+  @@index([planTier])
+}
+
+model UserProfile {
+  id                 String    @id @default(cuid())
+  userId             String    @unique
+  resumeUrl          String?   @db.VarChar(500)
+  resumeText         String?   @db.Text
+  parsedProfile      Json?
+  targetTitle        String?   @db.VarChar(255)
+  summary            String?   @db.Text
+  remoteOnly         Boolean   @default(false)
+  preferredLocations String[]  @default([])
+  salaryExpectation  String?   @db.VarChar(100)
+  currency           String?   @db.VarChar(10)
+  skills             String[]  @default([])
+  keywords           String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([targetTitle])
+}
+
+model Job {
+  id            String   @id @default(cuid())
+
+  // Basic info
+  title         String   @db.VarChar(255)
+  company       String   @db.VarChar(255)
+  companyUrl    String?
+  description   String   @db.Text
+  requirements  String?  @db.Text
+
+  // Job details
+  location      String?  @db.VarChar(255)
+  locationType  String?  @db.VarChar(100) // Remote, On-site, Hybrid
+  salary        String?  @db.VarChar(100)
+  currency      String?  @db.VarChar(10)  // USD, EUR, GBP
+  jobType       String?  @db.VarChar(100) // Full-time, Part-time, Contract, Freelance
+  level         String?  @db.VarChar(100) // Junior, Mid, Senior, Lead
+
+  // URL and tracking
+  sourceUrl     String   @unique @db.VarChar(500)
+  source        String   @db.VarChar(100) // tinyfish-open-web, manual-import, etc
+  sourceDomain  String?  @db.VarChar(255)
+  discoveryQuery String? @db.Text
+  contentHash   String?  @db.VarChar(128)
+  confidenceScore Float?
+
+  // Tags and search
+  tags          String[] @default([])     // e.g., ["React", "TypeScript", "Remote"]
+  keywords      String?  @db.Text         // Denormalized keywords for full-text search
+
+  // Timestamps
+  firstSeenAt   DateTime @default(now())
+  lastSeenAt    DateTime @default(now())
+  publishedAt   DateTime?
+  scrapedAt     DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  archivedAt    DateTime?
+
+  applications  JobApplication[]
+  searchResults SearchRunResult[]
+
+  @@index([company])
+  @@index([title])
+  @@index([location])
+  @@index([jobType])
+  @@index([level])
+  @@index([source])
+  @@index([sourceDomain])
+  @@index([createdAt])
+  @@index([scrapedAt])
+  @@index([lastSeenAt])
+  @@index([archivedAt])
+}
+
+model JobApplication {
+  id         String            @id @default(cuid())
+  userId     String
+  jobId      String
+  status     ApplicationStatus @default(CLICKED)
+  clickedAt  DateTime          @default(now())
+  appliedAt  DateTime?
+  notes      String?           @db.Text
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job        Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId, clickedAt])
+  @@index([jobId])
+}
+
+model SearchRun {
+  id              String          @id @default(cuid())
+  userId          String
+  type            SearchRunType   @default(FREE_INITIAL)
+  status          SearchRunStatus @default(RUNNING)
+  querySet        String[]        @default([])
+  profileSnapshot Json?
+  resultLimit     Int             @default(10)
+  fetchedCount    Int             @default(0)
+  rankedCount     Int             @default(0)
+  errorMessage    String?         @db.Text
+  startedAt       DateTime        @default(now())
+  completedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  results         SearchRunResult[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model SearchRunResult {
+  id          String    @id @default(cuid())
+  searchRunId String
+  jobId       String
+  rank        Int
+  score       Float?
+  reason      String?   @db.Text
+  createdAt   DateTime  @default(now())
+
+  searchRun   SearchRun @relation(fields: [searchRunId], references: [id], onDelete: Cascade)
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([searchRunId, jobId])
+  @@unique([searchRunId, rank])
+  @@index([jobId])
+}

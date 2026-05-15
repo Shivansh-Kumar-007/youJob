@@ -1,0 +1,24 @@
+export const siteConfig = {
+  name: "youJob",
+  shortName: "youJob",
+  tagline: "EASY AS B*****B",
+  description:
+    "Find high-signal remote jobs with youJob. Upload your CV and let our AI engine hunt for roles that match your career. No more board scrolling, just ranked opportunities.",
+  url:
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+    "http://localhost:3000",
+  keywords: [
+    "remote jobs",
+    "AI remote job search",
+    "CV-based job discovery",
+    "best remote job sites",
+    "AI career agent",
+    "high paying remote roles",
+    "work from anywhere jobs",
+    "youjob",
+  ],
+};
+
+export function absoluteUrl(path = "") {
+  return `${siteConfig.url}${path}`;
+}
