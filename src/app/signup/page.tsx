@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { SignupAuthForm } from "@/components/signup-auth-form";
+import { getAuthenticatedUserFromCookies } from "@/lib/auth-session";
 import { absoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -12,103 +15,53 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SignupPage() {
-  return (
-    <main className="page-shell py-10 md:py-14">
-      <div className="grid gap-8 md:grid-cols-[0.9fr_1.1fr]">
-        <section className="space-y-6">
-          <p className="label">Candidate onboarding</p>
-          <h1 className="section-title">
-            Build a profile the search engine can actually reason about.
-          </h1>
-          <p className="text-lg leading-8 text-[var(--color-on-surface-variant)]">
-            We start with your CV, then layer in role intent, salary
-            expectations, location strategy, and remote flexibility so the
-            search flow stays disciplined.
-          </p>
-          <div className="panel rounded-[var(--radius-lg)] p-6">
-            <h2 className="mb-4 text-xl font-semibold">
-              What you&apos;ll set up
-            </h2>
-            <ul className="space-y-4 text-[var(--color-on-surface-variant)]">
-              <li>CV upload and parsing</li>
-              <li>Target title and seniority</li>
-              <li>Remote-only or location preferences</li>
-              <li>Salary expectations and currency</li>
-              <li>Five daily applications on the free plan</li>
-            </ul>
-          </div>
-        </section>
+export default async function SignupPage() {
+  const user = await getAuthenticatedUserFromCookies();
+  if (user) {
+    redirect("/dashboard");
+  }
 
-        <section className="panel rounded-[var(--radius-xl)] p-6 md:p-8">
-          <div className="grid gap-5">
-            <div>
-              <label className="label mb-2 block" htmlFor="name">
-                Full Name
-              </label>
-              <input
-                id="name"
-                className="w-full rounded-[var(--radius)] border border-[color:rgba(64,73,68,0.2)] bg-white px-4 py-3 outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[color:rgba(43,105,84,0.1)]"
-                placeholder="Avery Collins"
-              />
+  return (
+    <main className="relative min-h-screen overflow-hidden bg-white py-10 md:py-14">
+      <div
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 hidden w-1/2 bg-[var(--color-tertiary)] md:block"
+      />
+      <div className="page-shell relative z-10">
+        <div className="grid items-start gap-8 lg:grid-cols-[1fr_1fr] lg:gap-10">
+          <section className="space-y-6 lg:max-w-[640px]">
+            <p className="label inline-block rounded-full border border-black bg-black px-3 py-1 text-[var(--color-tertiary)]">
+              Candidate onboarding
+            </p>
+            <h1 className="text-[clamp(2.4rem,5vw,5.2rem)] leading-[0.88] font-black italic tracking-[-0.04em] uppercase text-black">
+              Build a profile the search engine can actually reason about.
+            </h1>
+            <p className="max-w-xl rounded-[var(--radius-md)] border border-black/15 bg-white/80 p-4 text-lg leading-8 text-[var(--color-on-surface-variant)] backdrop-blur-sm">
+              We start with your CV, then layer in role intent, salary
+              expectations, location strategy, and remote flexibility so the
+              search flow stays disciplined.
+            </p>
+            <div className="rounded-[var(--radius-lg)] border-2 border-black bg-white p-6 shadow-[8px_8px_0_0_#000000]">
+              <h2 className="mb-4 text-xl font-semibold">What you&apos;ll set up</h2>
+              <ul className="space-y-4 text-[var(--color-on-surface-variant)]">
+                <li>CV upload and parsing</li>
+                <li>Target title and seniority</li>
+                <li>Remote-only or location preferences</li>
+                <li>Salary expectations and currency</li>
+                <li>Five daily applications on the free plan</li>
+              </ul>
             </div>
-            <div>
-              <label className="label mb-2 block" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                className="w-full rounded-[var(--radius)] border border-[color:rgba(64,73,68,0.2)] bg-white px-4 py-3 outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[color:rgba(43,105,84,0.1)]"
-                placeholder="avery@domain.com"
-              />
-            </div>
-            <div>
-              <label className="label mb-2 block" htmlFor="cv">
-                Upload CV
-              </label>
-              <div className="rounded-[var(--radius-lg)] border border-dashed border-[color:rgba(64,73,68,0.24)] bg-[var(--color-surface-container-low)] px-4 py-8 text-center text-sm text-[var(--color-on-surface-variant)]">
-                PDF or DOCX upload area
-              </div>
-            </div>
-            <div className="grid gap-5 md:grid-cols-2">
-              <div>
-                <label className="label mb-2 block" htmlFor="salary">
-                  Salary Expectation
-                </label>
-                <input
-                  id="salary"
-                  className="w-full rounded-[var(--radius)] border border-[color:rgba(64,73,68,0.2)] bg-white px-4 py-3 outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[color:rgba(43,105,84,0.1)]"
-                  placeholder="$180k+"
-                />
-              </div>
-              <div>
-                <label className="label mb-2 block" htmlFor="location">
-                  Preferred Location
-                </label>
-                <input
-                  id="location"
-                  className="w-full rounded-[var(--radius)] border border-[color:rgba(64,73,68,0.2)] bg-white px-4 py-3 outline-none focus:border-[var(--color-primary)] focus:ring-4 focus:ring-[color:rgba(43,105,84,0.1)]"
-                  placeholder="Remote, NYC, London"
-                />
-              </div>
-            </div>
-            <div className="flex items-center justify-between rounded-[var(--radius)] bg-[var(--color-surface-container-low)] px-4 py-3 text-sm">
-              <span>Free plan includes 5 job applications per day</span>
-              <span className="font-semibold text-[var(--color-primary)]">
-                Free
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button size="lg">Create Profile</Button>
-              <Link href="/pricing">
-                <Button variant="secondary" size="lg">
-                  Compare Plans
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
+          </section>
+
+          <SignupAuthForm />
+        </div>
+        <div className="mt-8 flex flex-wrap gap-3 lg:mt-10">
+          <Link href="/pricing">
+            <Button variant="secondary" size="lg" className="border-2 border-black bg-white">
+              Compare Plans
+            </Button>
+          </Link>
+        </div>
       </div>
     </main>
   );

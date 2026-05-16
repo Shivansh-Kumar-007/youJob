@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { mockJobs } from "@/lib/mock-jobs";
 import { siteConfig } from "@/lib/site";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo, LogoFull } from "@/components/logo";
+import { supabase } from "@/lib/supabase";
 
 const signals = [
   "AI-POWERED HUNT",
@@ -34,6 +35,7 @@ const steps = [
 
 export default function HomeClient() {
   const sectionRef = useRef(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { scrollYProgress } = useScroll();
 
   const { scrollYProgress: sectionProgress } = useScroll({
@@ -44,6 +46,26 @@ export default function HomeClient() {
   const skew = useTransform(scrollYProgress, [0, 0.2], [0, 10]);
   const xLeft = useTransform(sectionProgress, [0, 0.5], [-50, 0]);
   const xRight = useTransform(sectionProgress, [0, 0.5], [50, 0]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setIsAuthenticated(Boolean(data.session));
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(Boolean(session));
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <main className="overflow-x-hidden bg-white selection:bg-(--color-accent-yellow) selection:text-black">
@@ -95,10 +117,12 @@ export default function HomeClient() {
                 Pricing
               </Link>
               <Link
-                href="/signup"
+                href={isAuthenticated ? "/dashboard" : "/signup"}
                 className="group relative overflow-hidden bg-black px-8 py-3 text-white"
               >
-                <span className="relative z-10">Get Started</span>
+                <span className="relative z-10">
+                  {isAuthenticated ? "Dashboard" : "Get Started"}
+                </span>
                 <motion.div
                   className="absolute inset-0 bg-(--color-accent-yellow)"
                   initial={{ y: "100%" }}
@@ -150,12 +174,14 @@ export default function HomeClient() {
                 </p>
 
                 <div className="flex flex-wrap gap-6">
-                  <Button
-                    size="lg"
-                    className="h-16 rounded-none bg-black px-12 text-xl font-[1000] tracking-tighter text-white uppercase italic shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] transition-all hover:scale-105 hover:bg-(--color-accent-yellow) hover:text-black hover:shadow-none active:scale-95"
-                  >
-                    Upload CV →
-                  </Button>
+                  <Link href={isAuthenticated ? "/dashboard" : "/signup"}>
+                    <Button
+                      size="lg"
+                      className="h-16 rounded-none bg-black px-12 text-xl font-[1000] tracking-tighter text-white uppercase italic shadow-[8px_8px_0px_0px_rgba(250,204,21,1)] transition-all hover:scale-105 hover:bg-(--color-accent-yellow) hover:text-black hover:shadow-none active:scale-95"
+                    >
+                      {isAuthenticated ? "Update CV →" : "Upload CV →"}
+                    </Button>
+                  </Link>
                   <Link href="/jobs">
                     <Button
                       variant="ghost"

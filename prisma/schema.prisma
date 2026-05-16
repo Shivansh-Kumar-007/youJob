@@ -53,6 +53,10 @@ model UserProfile {
   id                 String    @id @default(cuid())
   userId             String    @unique
   resumeUrl          String?   @db.VarChar(500)
+  resumeMimeType     String?   @db.VarChar(100)
+  resumeFileSize     Int?
+  resumeContentHash  String?   @db.VarChar(128)
+  resumeParsedAt     DateTime?
   resumeText         String?   @db.Text
   parsedProfile      Json?
   targetTitle        String?   @db.VarChar(255)
@@ -69,6 +73,8 @@ model UserProfile {
   user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([targetTitle])
+  @@index([resumeParsedAt])
+  @@index([resumeContentHash])
 }
 
 model Job {

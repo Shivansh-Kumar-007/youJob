@@ -2679,14 +2679,28 @@ export namespace Prisma {
 
   export type AggregateUserProfile = {
     _count: UserProfileCountAggregateOutputType | null
+    _avg: UserProfileAvgAggregateOutputType | null
+    _sum: UserProfileSumAggregateOutputType | null
     _min: UserProfileMinAggregateOutputType | null
     _max: UserProfileMaxAggregateOutputType | null
+  }
+
+  export type UserProfileAvgAggregateOutputType = {
+    resumeFileSize: number | null
+  }
+
+  export type UserProfileSumAggregateOutputType = {
+    resumeFileSize: number | null
   }
 
   export type UserProfileMinAggregateOutputType = {
     id: string | null
     userId: string | null
     resumeUrl: string | null
+    resumeMimeType: string | null
+    resumeFileSize: number | null
+    resumeContentHash: string | null
+    resumeParsedAt: Date | null
     resumeText: string | null
     targetTitle: string | null
     summary: string | null
@@ -2702,6 +2716,10 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     resumeUrl: string | null
+    resumeMimeType: string | null
+    resumeFileSize: number | null
+    resumeContentHash: string | null
+    resumeParsedAt: Date | null
     resumeText: string | null
     targetTitle: string | null
     summary: string | null
@@ -2717,6 +2735,10 @@ export namespace Prisma {
     id: number
     userId: number
     resumeUrl: number
+    resumeMimeType: number
+    resumeFileSize: number
+    resumeContentHash: number
+    resumeParsedAt: number
     resumeText: number
     parsedProfile: number
     targetTitle: number
@@ -2733,10 +2755,22 @@ export namespace Prisma {
   }
 
 
+  export type UserProfileAvgAggregateInputType = {
+    resumeFileSize?: true
+  }
+
+  export type UserProfileSumAggregateInputType = {
+    resumeFileSize?: true
+  }
+
   export type UserProfileMinAggregateInputType = {
     id?: true
     userId?: true
     resumeUrl?: true
+    resumeMimeType?: true
+    resumeFileSize?: true
+    resumeContentHash?: true
+    resumeParsedAt?: true
     resumeText?: true
     targetTitle?: true
     summary?: true
@@ -2752,6 +2786,10 @@ export namespace Prisma {
     id?: true
     userId?: true
     resumeUrl?: true
+    resumeMimeType?: true
+    resumeFileSize?: true
+    resumeContentHash?: true
+    resumeParsedAt?: true
     resumeText?: true
     targetTitle?: true
     summary?: true
@@ -2767,6 +2805,10 @@ export namespace Prisma {
     id?: true
     userId?: true
     resumeUrl?: true
+    resumeMimeType?: true
+    resumeFileSize?: true
+    resumeContentHash?: true
+    resumeParsedAt?: true
     resumeText?: true
     parsedProfile?: true
     targetTitle?: true
@@ -2820,6 +2862,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserProfileAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserProfileSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserProfileMinAggregateInputType
@@ -2850,6 +2904,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserProfileCountAggregateInputType | true
+    _avg?: UserProfileAvgAggregateInputType
+    _sum?: UserProfileSumAggregateInputType
     _min?: UserProfileMinAggregateInputType
     _max?: UserProfileMaxAggregateInputType
   }
@@ -2858,6 +2914,10 @@ export namespace Prisma {
     id: string
     userId: string
     resumeUrl: string | null
+    resumeMimeType: string | null
+    resumeFileSize: number | null
+    resumeContentHash: string | null
+    resumeParsedAt: Date | null
     resumeText: string | null
     parsedProfile: JsonValue | null
     targetTitle: string | null
@@ -2871,6 +2931,8 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     _count: UserProfileCountAggregateOutputType | null
+    _avg: UserProfileAvgAggregateOutputType | null
+    _sum: UserProfileSumAggregateOutputType | null
     _min: UserProfileMinAggregateOutputType | null
     _max: UserProfileMaxAggregateOutputType | null
   }
@@ -2893,6 +2955,10 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     resumeUrl?: boolean
+    resumeMimeType?: boolean
+    resumeFileSize?: boolean
+    resumeContentHash?: boolean
+    resumeParsedAt?: boolean
     resumeText?: boolean
     parsedProfile?: boolean
     targetTitle?: boolean
@@ -2912,6 +2978,10 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     resumeUrl?: boolean
+    resumeMimeType?: boolean
+    resumeFileSize?: boolean
+    resumeContentHash?: boolean
+    resumeParsedAt?: boolean
     resumeText?: boolean
     parsedProfile?: boolean
     targetTitle?: boolean
@@ -2931,6 +3001,10 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     resumeUrl?: boolean
+    resumeMimeType?: boolean
+    resumeFileSize?: boolean
+    resumeContentHash?: boolean
+    resumeParsedAt?: boolean
     resumeText?: boolean
     parsedProfile?: boolean
     targetTitle?: boolean
@@ -2950,6 +3024,10 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     resumeUrl?: boolean
+    resumeMimeType?: boolean
+    resumeFileSize?: boolean
+    resumeContentHash?: boolean
+    resumeParsedAt?: boolean
     resumeText?: boolean
     parsedProfile?: boolean
     targetTitle?: boolean
@@ -2964,7 +3042,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type UserProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "resumeUrl" | "resumeText" | "parsedProfile" | "targetTitle" | "summary" | "remoteOnly" | "preferredLocations" | "salaryExpectation" | "currency" | "skills" | "keywords" | "createdAt" | "updatedAt", ExtArgs["result"]["userProfile"]>
+  export type UserProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "resumeUrl" | "resumeMimeType" | "resumeFileSize" | "resumeContentHash" | "resumeParsedAt" | "resumeText" | "parsedProfile" | "targetTitle" | "summary" | "remoteOnly" | "preferredLocations" | "salaryExpectation" | "currency" | "skills" | "keywords" | "createdAt" | "updatedAt", ExtArgs["result"]["userProfile"]>
   export type UserProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -2984,6 +3062,10 @@ export namespace Prisma {
       id: string
       userId: string
       resumeUrl: string | null
+      resumeMimeType: string | null
+      resumeFileSize: number | null
+      resumeContentHash: string | null
+      resumeParsedAt: Date | null
       resumeText: string | null
       parsedProfile: Prisma.JsonValue | null
       targetTitle: string | null
@@ -3423,6 +3505,10 @@ export namespace Prisma {
     readonly id: FieldRef<"UserProfile", 'String'>
     readonly userId: FieldRef<"UserProfile", 'String'>
     readonly resumeUrl: FieldRef<"UserProfile", 'String'>
+    readonly resumeMimeType: FieldRef<"UserProfile", 'String'>
+    readonly resumeFileSize: FieldRef<"UserProfile", 'Int'>
+    readonly resumeContentHash: FieldRef<"UserProfile", 'String'>
+    readonly resumeParsedAt: FieldRef<"UserProfile", 'DateTime'>
     readonly resumeText: FieldRef<"UserProfile", 'String'>
     readonly parsedProfile: FieldRef<"UserProfile", 'Json'>
     readonly targetTitle: FieldRef<"UserProfile", 'String'>
@@ -8806,6 +8892,10 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     resumeUrl: 'resumeUrl',
+    resumeMimeType: 'resumeMimeType',
+    resumeFileSize: 'resumeFileSize',
+    resumeContentHash: 'resumeContentHash',
+    resumeParsedAt: 'resumeParsedAt',
     resumeText: 'resumeText',
     parsedProfile: 'parsedProfile',
     targetTitle: 'targetTitle',
@@ -9166,6 +9256,10 @@ export namespace Prisma {
     id?: StringFilter<"UserProfile"> | string
     userId?: StringFilter<"UserProfile"> | string
     resumeUrl?: StringNullableFilter<"UserProfile"> | string | null
+    resumeMimeType?: StringNullableFilter<"UserProfile"> | string | null
+    resumeFileSize?: IntNullableFilter<"UserProfile"> | number | null
+    resumeContentHash?: StringNullableFilter<"UserProfile"> | string | null
+    resumeParsedAt?: DateTimeNullableFilter<"UserProfile"> | Date | string | null
     resumeText?: StringNullableFilter<"UserProfile"> | string | null
     parsedProfile?: JsonNullableFilter<"UserProfile">
     targetTitle?: StringNullableFilter<"UserProfile"> | string | null
@@ -9185,6 +9279,10 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     resumeUrl?: SortOrderInput | SortOrder
+    resumeMimeType?: SortOrderInput | SortOrder
+    resumeFileSize?: SortOrderInput | SortOrder
+    resumeContentHash?: SortOrderInput | SortOrder
+    resumeParsedAt?: SortOrderInput | SortOrder
     resumeText?: SortOrderInput | SortOrder
     parsedProfile?: SortOrderInput | SortOrder
     targetTitle?: SortOrderInput | SortOrder
@@ -9207,6 +9305,10 @@ export namespace Prisma {
     OR?: UserProfileWhereInput[]
     NOT?: UserProfileWhereInput | UserProfileWhereInput[]
     resumeUrl?: StringNullableFilter<"UserProfile"> | string | null
+    resumeMimeType?: StringNullableFilter<"UserProfile"> | string | null
+    resumeFileSize?: IntNullableFilter<"UserProfile"> | number | null
+    resumeContentHash?: StringNullableFilter<"UserProfile"> | string | null
+    resumeParsedAt?: DateTimeNullableFilter<"UserProfile"> | Date | string | null
     resumeText?: StringNullableFilter<"UserProfile"> | string | null
     parsedProfile?: JsonNullableFilter<"UserProfile">
     targetTitle?: StringNullableFilter<"UserProfile"> | string | null
@@ -9226,6 +9328,10 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     resumeUrl?: SortOrderInput | SortOrder
+    resumeMimeType?: SortOrderInput | SortOrder
+    resumeFileSize?: SortOrderInput | SortOrder
+    resumeContentHash?: SortOrderInput | SortOrder
+    resumeParsedAt?: SortOrderInput | SortOrder
     resumeText?: SortOrderInput | SortOrder
     parsedProfile?: SortOrderInput | SortOrder
     targetTitle?: SortOrderInput | SortOrder
@@ -9239,8 +9345,10 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserProfileCountOrderByAggregateInput
+    _avg?: UserProfileAvgOrderByAggregateInput
     _max?: UserProfileMaxOrderByAggregateInput
     _min?: UserProfileMinOrderByAggregateInput
+    _sum?: UserProfileSumOrderByAggregateInput
   }
 
   export type UserProfileScalarWhereWithAggregatesInput = {
@@ -9250,6 +9358,10 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"UserProfile"> | string
     userId?: StringWithAggregatesFilter<"UserProfile"> | string
     resumeUrl?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+    resumeMimeType?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+    resumeFileSize?: IntNullableWithAggregatesFilter<"UserProfile"> | number | null
+    resumeContentHash?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
+    resumeParsedAt?: DateTimeNullableWithAggregatesFilter<"UserProfile"> | Date | string | null
     resumeText?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
     parsedProfile?: JsonNullableWithAggregatesFilter<"UserProfile">
     targetTitle?: StringNullableWithAggregatesFilter<"UserProfile"> | string | null
@@ -9775,6 +9887,10 @@ export namespace Prisma {
   export type UserProfileCreateInput = {
     id?: string
     resumeUrl?: string | null
+    resumeMimeType?: string | null
+    resumeFileSize?: number | null
+    resumeContentHash?: string | null
+    resumeParsedAt?: Date | string | null
     resumeText?: string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: string | null
@@ -9794,6 +9910,10 @@ export namespace Prisma {
     id?: string
     userId: string
     resumeUrl?: string | null
+    resumeMimeType?: string | null
+    resumeFileSize?: number | null
+    resumeContentHash?: string | null
+    resumeParsedAt?: Date | string | null
     resumeText?: string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: string | null
@@ -9811,6 +9931,10 @@ export namespace Prisma {
   export type UserProfileUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     resumeUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeMimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeFileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    resumeContentHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeParsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resumeText?: NullableStringFieldUpdateOperationsInput | string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: NullableStringFieldUpdateOperationsInput | string | null
@@ -9830,6 +9954,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     resumeUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeMimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeFileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    resumeContentHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeParsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resumeText?: NullableStringFieldUpdateOperationsInput | string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: NullableStringFieldUpdateOperationsInput | string | null
@@ -9848,6 +9976,10 @@ export namespace Prisma {
     id?: string
     userId: string
     resumeUrl?: string | null
+    resumeMimeType?: string | null
+    resumeFileSize?: number | null
+    resumeContentHash?: string | null
+    resumeParsedAt?: Date | string | null
     resumeText?: string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: string | null
@@ -9865,6 +9997,10 @@ export namespace Prisma {
   export type UserProfileUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     resumeUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeMimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeFileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    resumeContentHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeParsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resumeText?: NullableStringFieldUpdateOperationsInput | string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: NullableStringFieldUpdateOperationsInput | string | null
@@ -9883,6 +10019,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     resumeUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeMimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeFileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    resumeContentHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeParsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resumeText?: NullableStringFieldUpdateOperationsInput | string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: NullableStringFieldUpdateOperationsInput | string | null
@@ -10589,6 +10729,28 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
   export type JsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -10635,6 +10797,10 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     resumeUrl?: SortOrder
+    resumeMimeType?: SortOrder
+    resumeFileSize?: SortOrder
+    resumeContentHash?: SortOrder
+    resumeParsedAt?: SortOrder
     resumeText?: SortOrder
     parsedProfile?: SortOrder
     targetTitle?: SortOrder
@@ -10649,10 +10815,18 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type UserProfileAvgOrderByAggregateInput = {
+    resumeFileSize?: SortOrder
+  }
+
   export type UserProfileMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     resumeUrl?: SortOrder
+    resumeMimeType?: SortOrder
+    resumeFileSize?: SortOrder
+    resumeContentHash?: SortOrder
+    resumeParsedAt?: SortOrder
     resumeText?: SortOrder
     targetTitle?: SortOrder
     summary?: SortOrder
@@ -10668,6 +10842,10 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     resumeUrl?: SortOrder
+    resumeMimeType?: SortOrder
+    resumeFileSize?: SortOrder
+    resumeContentHash?: SortOrder
+    resumeParsedAt?: SortOrder
     resumeText?: SortOrder
     targetTitle?: SortOrder
     summary?: SortOrder
@@ -10677,6 +10855,40 @@ export namespace Prisma {
     keywords?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type UserProfileSumOrderByAggregateInput = {
+    resumeFileSize?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
   export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -10722,17 +10934,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type SearchRunResultListRelationFilter = {
@@ -10855,20 +11056,6 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type EnumApplicationStatusFilter<$PrismaModel = never> = {
@@ -11236,6 +11423,18 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
   }
@@ -11301,10 +11500,6 @@ export namespace Prisma {
   export type JobUpdatetagsInput = {
     set?: string[]
     push?: string | string[]
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type JobApplicationUpdateManyWithoutJobNestedInput = {
@@ -11649,9 +11844,61 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>
     not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
@@ -11685,28 +11932,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
@@ -11721,20 +11946,6 @@ export namespace Prisma {
     _sum?: NestedFloatNullableFilter<$PrismaModel>
     _min?: NestedFloatNullableFilter<$PrismaModel>
     _max?: NestedFloatNullableFilter<$PrismaModel>
-  }
-
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumApplicationStatusFilter<$PrismaModel = never> = {
@@ -11791,6 +12002,10 @@ export namespace Prisma {
   export type UserProfileCreateWithoutUserInput = {
     id?: string
     resumeUrl?: string | null
+    resumeMimeType?: string | null
+    resumeFileSize?: number | null
+    resumeContentHash?: string | null
+    resumeParsedAt?: Date | string | null
     resumeText?: string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: string | null
@@ -11808,6 +12023,10 @@ export namespace Prisma {
   export type UserProfileUncheckedCreateWithoutUserInput = {
     id?: string
     resumeUrl?: string | null
+    resumeMimeType?: string | null
+    resumeFileSize?: number | null
+    resumeContentHash?: string | null
+    resumeParsedAt?: Date | string | null
     resumeText?: string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: string | null
@@ -11917,6 +12136,10 @@ export namespace Prisma {
   export type UserProfileUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     resumeUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeMimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeFileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    resumeContentHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeParsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resumeText?: NullableStringFieldUpdateOperationsInput | string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: NullableStringFieldUpdateOperationsInput | string | null
@@ -11934,6 +12157,10 @@ export namespace Prisma {
   export type UserProfileUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     resumeUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeMimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeFileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    resumeContentHash?: NullableStringFieldUpdateOperationsInput | string | null
+    resumeParsedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     resumeText?: NullableStringFieldUpdateOperationsInput | string | null
     parsedProfile?: NullableJsonNullValueInput | InputJsonValue
     targetTitle?: NullableStringFieldUpdateOperationsInput | string | null
