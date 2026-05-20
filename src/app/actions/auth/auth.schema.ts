@@ -43,6 +43,8 @@ export const createResumeUploadUrlOutputSchema = z.object({
 
 export const saveResumeInputSchema = z.object({
   resumePath: z.string().trim().min(1),
+  preferredLocation: z.string().trim().min(1).optional(),
+  remoteOnly: z.boolean().optional(),
 });
 
 export const saveResumeOutputSchema = z.object({

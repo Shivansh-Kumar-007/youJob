@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/providers";
-import { absoluteUrl, siteConfig } from "@/lib/site";
+import { Providers } from "@/ui/shared-components/providers";
+import { absoluteUrl, siteConfig } from "@/lib/utils/site";
 
 const montserrat = Montserrat({
   variable: "--font-sans",
@@ -45,6 +45,21 @@ export default function RootLayout({
         className={`${montserrat.variable} min-h-full bg-(--color-background) font-sans text-(--color-on-background) antialiased`}
       >
         <Providers>{children}</Providers>
+        <style>{`
+          @keyframes yj-pulse {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-4px) scale(1.04); }
+          }
+          @keyframes yj-load {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(220%); }
+          }
+          @keyframes yj-confetti {
+            0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translate3d(0, 110vh, 0) rotate(540deg); opacity: 0; }
+          }
+        `}</style>
       </body>
     </html>
   );

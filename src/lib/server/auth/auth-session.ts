@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { createSupabaseServerClient } from "@/lib/third-party-clients/supabase/server";
+import { setSignedUserEmailCookie } from "./user-email-cookie";
 
 export const AUTH_ACCESS_COOKIE = "youjob_access_token";
 export const AUTH_REFRESH_COOKIE = "youjob_refresh_token";
@@ -8,6 +9,7 @@ export async function setAuthSessionCookies(input: {
   accessToken: string;
   refreshToken: string;
   expiresAt?: number | null;
+  email?: string;
 }) {
   const cookieStore = await cookies();
   const maxAge =
@@ -30,7 +32,12 @@ export async function setAuthSessionCookies(input: {
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
+
+  if (input.email) {
+    await setSignedUserEmailCookie(input.email);
+  }
 }
+
 
 export async function getAccessTokenFromCookies(): Promise<string | null> {
   const cookieStore = await cookies();

@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { mockJobs } from "@/lib/mock-jobs";
-import { siteConfig } from "@/lib/site";
+import { Button } from "@/ui/shared-components/button";
+import { mockJobs } from "@/lib/utils/mock-jobs";
+import { siteConfig } from "@/lib/utils/site";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
-import { Logo, LogoFull } from "@/components/logo";
-import { supabase } from "@/lib/supabase";
+import { useRef } from "react";
+import { Logo, LogoFull } from "@/ui/product-components/logo";
 
 const signals = [
   "AI-POWERED HUNT",
@@ -33,9 +32,12 @@ const steps = [
   },
 ];
 
-export default function HomeClient() {
+type HomeClientProps = {
+  isAuthenticated: boolean;
+};
+
+export default function HomeClient({ isAuthenticated }: HomeClientProps) {
   const sectionRef = useRef(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { scrollYProgress } = useScroll();
 
   const { scrollYProgress: sectionProgress } = useScroll({
@@ -46,26 +48,6 @@ export default function HomeClient() {
   const skew = useTransform(scrollYProgress, [0, 0.2], [0, 10]);
   const xLeft = useTransform(sectionProgress, [0, 0.5], [-50, 0]);
   const xRight = useTransform(sectionProgress, [0, 0.5], [50, 0]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(data.session));
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
 
   return (
     <main className="overflow-x-hidden bg-white selection:bg-(--color-accent-yellow) selection:text-black">
@@ -110,6 +92,12 @@ export default function HomeClient() {
               transition={{ type: "spring", damping: 12 }}
               className="flex flex-wrap items-center gap-8 text-sm font-[1000] tracking-widest text-black uppercase"
             >
+              <Link
+                href="/login"
+                className="px-2 transition-colors hover:bg-black hover:text-(--color-accent-yellow)"
+              >
+                Login
+              </Link>
               <Link
                 href="/pricing"
                 className="px-2 transition-colors hover:bg-black hover:text-(--color-accent-yellow)"
@@ -221,7 +209,7 @@ export default function HomeClient() {
                   </motion.p>
                   <Link
                     href="/jobs"
-                    className="text-xs font-[700] text-(--color-accent-yellow) uppercase"
+                    className="text-xs font-bold text-(--color-accent-yellow) uppercase"
                   >
                     View all
                   </Link>
@@ -350,7 +338,7 @@ export default function HomeClient() {
       </section>
 
       {/* NO MORE WASTE */}
-      <section ref={sectionRef} className="page-shell mt-24">
+      <section ref={sectionRef} className="page-shell relative mt-24">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}

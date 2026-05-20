@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { mockJobs } from "@/lib/mock-jobs";
-import { absoluteUrl } from "@/lib/site";
+import { mockJobs } from "@/lib/utils/mock-jobs";
+import { absoluteUrl } from "@/lib/utils/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = ["", "/signup", "/jobs", "/pricing"].map((path) => ({

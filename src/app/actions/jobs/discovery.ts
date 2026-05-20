@@ -1,11 +1,55 @@
+import { generateText } from "ai";
+import { geminiProvider } from "@/lib/third-party-clients/gemini";
 import {
   fetchTinyFish,
   normalizeTinyFishText,
   searchTinyFish,
   type TinyFishFetchResult,
   type TinyFishSearchResult,
-} from "@/lib/tinyfish";
-import { analyzeJobDiscovery } from "@/lib/gemini";
+} from "../search/tinyfish";
+
+type JobDiscoveryAnalysisInput = {
+  query: string;
+  pages: Array<{
+    url: string;
+    title?: string | null;
+    snippet?: string | null;
+    content: string;
+  }>;
+};
+
+async function analyzeJobDiscovery(
+  input: JobDiscoveryAnalysisInput
+): Promise<string> {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("Missing GEMINI_API_KEY");
+  }
+
+  const prompt = [
+    "You are analyzing job discovery results for a remote-job search product.",
+    "Summarize the strongest roles and explain why they are relevant.",
+    "Be concise and practical.",
+    "",
+    `Search query: ${input.query}`,
+    "",
+    "Pages:",
+    ...input.pages.map((page, index) =>
+      [
+        `${index + 1}. ${page.title || "Untitled"}`,
+        `URL: ${page.url}`,
+        `Snippet: ${page.snippet || "n/a"}`,
+        `Content:\n${page.content.slice(0, 6000)}`,
+      ].join("\n")
+    ),
+  ].join("\n");
+
+  const result = await generateText({
+    model: geminiProvider(process.env.AI_RANKING_MODEL || "gemini-2.5-flash"),
+    prompt,
+  });
+
+  return result.text;
+}
 
 export type JobDiscoveryInput = {
   query: string;
@@ -36,10 +80,10 @@ export type JobDiscoveryOutput = {
 
 function mergeResults(
   results: TinyFishSearchResult[],
-  fetchedResults: TinyFishFetchResult[],
+  fetchedResults: TinyFishFetchResult[]
 ): JobDiscoveryItem[] {
   const fetchedByUrl = new Map(
-    fetchedResults.map((result) => [result.url, result] as const),
+    fetchedResults.map((result) => [result.url, result] as const)
   );
 
   return results.map((result) => {
@@ -59,7 +103,7 @@ function mergeResults(
 }
 
 export async function runJobDiscovery(
-  input: JobDiscoveryInput,
+  input: JobDiscoveryInput
 ): Promise<JobDiscoveryOutput> {
   const maxResults = Math.min(Math.max(input.maxResults ?? 5, 1), 10);
   const searchResponse = await searchTinyFish({

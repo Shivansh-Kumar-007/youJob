@@ -2,25 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/ui/shared-components/button";
 import {
   createResumeSignedUploadUrlAction,
   saveResumeAction,
   sendOtpAction,
   verifyOtpAction,
 } from "@/app/actions/auth/auth";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/third-party-clients/supabase/client";
 
 type Step = "profile" | "otp";
 
-export function SignupAuthForm() {
+type SignupAuthFormProps = {
+  mode?: "signup" | "login";
+};
+
+export function SignupAuthForm({ mode = "signup" }: SignupAuthFormProps) {
   const router = useRouter();
+  const isLoginMode = mode === "login";
   const [step, setStep] = useState<Step>("profile");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
-  const [salaryExpectation, setSalaryExpectation] = useState("");
   const [preferredLocation, setPreferredLocation] = useState("");
+  const [remoteOnly, setRemoteOnly] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -44,11 +49,7 @@ export function SignupAuthForm() {
       return;
     }
 
-    const allowedMimeTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
+    const allowedMimeTypes = ["application/pdf"];
     const allowedExtensions = [".pdf", ".doc", ".docx"];
     const hasValidExtension = allowedExtensions.some((extension) =>
       file.name.toLowerCase().endsWith(extension)
@@ -76,9 +77,20 @@ export function SignupAuthForm() {
     setIsSendingOtp(true);
 
     try {
-      await sendOtpAction({ email, fullName });
+      const result = await sendOtpAction({
+        email,
+        fullName: isLoginMode ? undefined : fullName,
+      });
 
-      setMessage("OTP sent. Check your email inbox.");
+      if (!result?.data?.success) {
+        throw new Error(result?.serverError || "Failed to send OTP");
+      }
+
+      setMessage(
+        isLoginMode
+          ? "OTP sent. Check your email inbox to sign in."
+          : "OTP sent. Check your email inbox."
+      );
       setStep("otp");
       setResendCooldown(30);
     } catch (unknownError) {
@@ -98,28 +110,29 @@ export function SignupAuthForm() {
     setIsVerifyingOtp(true);
 
     try {
-      const payload = await verifyOtpAction({ email, token: otp });
+      const result = await verifyOtpAction({ email, token: otp });
 
-      const { accessToken, refreshToken } = payload.session;
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-
-      if (sessionError) {
-        throw new Error(sessionError.message);
+      if (!result?.data?.success) {
+        throw new Error(
+          result?.serverError || "Invalid OTP or verification failed"
+        );
       }
 
-      if (cvFile) {
+      if (!isLoginMode && cvFile) {
         try {
-          const signedUrlPayload = await createResumeSignedUploadUrlAction({
-            upload: {
-              fileName: cvFile.name,
-              contentType: cvFile.type || "application/pdf",
-            },
+          const signedUrlResponse = await createResumeSignedUploadUrlAction({
+            fileName: cvFile.name,
+            contentType: cvFile.type || "application/pdf",
           });
 
-          const { bucket, path, token } = signedUrlPayload;
+          if (!signedUrlResponse?.data) {
+            throw new Error(
+              signedUrlResponse?.serverError ||
+                "Failed to create signed upload URL"
+            );
+          }
+
+          const { bucket, path, token } = signedUrlResponse.data;
           const { error: uploadError } = await supabase.storage
             .from(bucket)
             .uploadToSignedUrl(path, token, cvFile);
@@ -128,18 +141,30 @@ export function SignupAuthForm() {
             throw new Error(uploadError.message);
           }
 
-          await saveResumeAction({
-            resume: {
-              resumePath: path,
-            },
+          const saveResult = await saveResumeAction({
+            resumePath: path,
+            preferredLocation: preferredLocation.trim() || undefined,
+            remoteOnly,
           });
+
+          if (saveResult?.serverError || saveResult?.validationErrors) {
+            console.error(
+              "Save resume failed:",
+              saveResult.serverError,
+              saveResult.validationErrors
+            );
+          }
         } catch (resumeError) {
           console.error("Resume upload/ingest failed:", resumeError);
         }
       }
 
-      setMessage("Signup complete. Redirecting...");
-      router.push("/dashboard");
+      setMessage(
+        isLoginMode
+          ? "Login complete. Redirecting..."
+          : "Signup complete. Redirecting..."
+      );
+      router.push(`/dashboard?celebrate=${isLoginMode ? "login" : "signup"}`);
       router.refresh();
     } catch (unknownError) {
       const message =
@@ -157,21 +182,23 @@ export function SignupAuthForm() {
   }
 
   return (
-    <section className="rounded-[var(--radius-xl)] border-2 border-black bg-white p-6 shadow-[10px_10px_0_0_#000000] md:p-8">
+    <section className="rounded-xl border-2 border-black bg-white p-6 shadow-[10px_10px_0_0_#000000] md:p-8">
       <div className="grid gap-5">
-        <div>
-          <label className="label mb-2 block" htmlFor="name">
-            Full Name
-          </label>
-          <input
-            id="name"
-            value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
-            className="w-full rounded-[var(--radius)] border border-black/25 bg-white px-4 py-3 outline-none focus:border-black focus:ring-4 focus:ring-[color:rgba(250,204,21,0.25)]"
-            placeholder="Avery Collins"
-            disabled={step === "otp"}
-          />
-        </div>
+        {!isLoginMode ? (
+          <div>
+            <label className="label mb-2 block" htmlFor="name">
+              Full Name
+            </label>
+            <input
+              id="name"
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              className="w-full rounded-(--radius) border border-black/25 bg-white px-4 py-3 outline-none focus:border-black focus:ring-4 focus:ring-[rgba(250,204,21,0.25)]"
+              placeholder="Avery Collins"
+              disabled={step === "otp"}
+            />
+          </div>
+        ) : null}
 
         <div>
           <label className="label mb-2 block" htmlFor="email">
@@ -182,7 +209,7 @@ export function SignupAuthForm() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="w-full rounded-[var(--radius)] border border-black/25 bg-white px-4 py-3 outline-none focus:border-black focus:ring-4 focus:ring-[color:rgba(250,204,21,0.25)]"
+            className="w-full rounded-(--radius) border border-black/25 bg-white px-4 py-3 outline-none focus:border-black focus:ring-4 focus:ring-[rgba(250,204,21,0.25)]"
             placeholder="avery@domain.com"
             disabled={step === "otp"}
           />
@@ -201,10 +228,10 @@ export function SignupAuthForm() {
               onChange={(event) =>
                 setOtp(event.target.value.replace(/\D/g, "").slice(0, 8))
               }
-              className="w-full rounded-[var(--radius)] border border-black/25 bg-white px-4 py-3 tracking-[0.35em] outline-none focus:border-black focus:ring-4 focus:ring-[color:rgba(250,204,21,0.25)]"
+              className="w-full rounded-(--radius) border border-black/25 bg-white px-4 py-3 tracking-[0.35em] outline-none focus:border-black focus:ring-4 focus:ring-[rgba(250,204,21,0.25)]"
               placeholder="123456"
             />
-            <p className="mt-2 text-xs text-[var(--color-on-surface-variant)]">
+            <p className="mt-2 text-xs text-(--color-on-surface-variant)">
               Enter the 6 to 8 digit code sent to {email}.
             </p>
             <div className="mt-3">
@@ -222,16 +249,16 @@ export function SignupAuthForm() {
               </button>
             </div>
           </div>
-        ) : (
+        ) : !isLoginMode ? (
           <div>
             <label className="label mb-2 block" htmlFor="cv">
               Upload CV
             </label>
-            <div className="rounded-[var(--radius-lg)] border border-dashed border-black/25 bg-white/70 px-4 py-6 text-center">
+            <div className="rounded-lg border border-dashed border-black/25 bg-white/70 px-4 py-6 text-center">
               <input
                 id="cv"
                 type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                accept=".pdf,application/pdf"
                 className="hidden"
                 onChange={(event) =>
                   onCvSelected(event.target.files?.[0] ?? null)
@@ -239,11 +266,11 @@ export function SignupAuthForm() {
               />
               <label
                 htmlFor="cv"
-                className="inline-flex cursor-pointer items-center justify-center rounded-[var(--radius)] border border-black/30 bg-[var(--color-tertiary)] px-4 py-2 text-sm font-bold text-black hover:bg-[#f6be00]"
+                className="inline-flex cursor-pointer items-center justify-center rounded-(--radius) border border-black/30 bg-(--color-tertiary) px-4 py-2 text-sm font-bold text-black hover:bg-[#f6be00]"
               >
                 {cvFile ? "Replace CV" : "Choose CV"}
               </label>
-              <p className="mt-3 text-sm text-[var(--color-on-surface-variant)]">
+              <p className="mt-3 text-sm text-(--color-on-surface-variant)">
                 {cvFile
                   ? `${cvFile.name} (${Math.ceil(cvFile.size / 1024)} KB)`
                   : "PDF up to 5MB"}
@@ -257,28 +284,23 @@ export function SignupAuthForm() {
                   Remove file
                 </button>
               ) : null}
-              <p className="mt-2 text-xs text-[var(--color-on-surface-variant)]">
+              <p className="mt-2 text-xs text-(--color-on-surface-variant)">
                 CV parsing and profile extraction continue after email
                 verification.
               </p>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {step === "profile" ? (
+        {isLoginMode && step !== "otp" ? (
+          <div className="rounded-lg border border-black/15 bg-[#fff6c7] px-4 py-4 text-sm leading-7 text-black/75">
+            Use the same email you used before. We&apos;ll send a one-time code
+            and take you back to your dashboard.
+          </div>
+        ) : null}
+
+        {step === "profile" && !isLoginMode ? (
           <div className="grid gap-5 md:grid-cols-2">
-            <div>
-              <label className="label mb-2 block" htmlFor="salary">
-                Salary Expectation
-              </label>
-              <input
-                id="salary"
-                value={salaryExpectation}
-                onChange={(event) => setSalaryExpectation(event.target.value)}
-                className="w-full rounded-[var(--radius)] border border-black/25 bg-white px-4 py-3 outline-none focus:border-black focus:ring-4 focus:ring-[color:rgba(250,204,21,0.25)]"
-                placeholder="$180k+"
-              />
-            </div>
             <div>
               <label className="label mb-2 block" htmlFor="location">
                 Preferred Location
@@ -287,21 +309,32 @@ export function SignupAuthForm() {
                 id="location"
                 value={preferredLocation}
                 onChange={(event) => setPreferredLocation(event.target.value)}
-                className="w-full rounded-[var(--radius)] border border-black/25 bg-white px-4 py-3 outline-none focus:border-black focus:ring-4 focus:ring-[color:rgba(250,204,21,0.25)]"
+                className="w-full rounded-(--radius) border border-black/25 bg-white px-4 py-3 outline-none focus:border-black focus:ring-4 focus:ring-[rgba(250,204,21,0.25)]"
                 placeholder="Remote, NYC, London"
               />
             </div>
+            <label className="flex items-center gap-3 rounded-(--radius) border border-black/25 bg-white px-4 py-3 md:self-end">
+              <input
+                type="checkbox"
+                checked={remoteOnly}
+                onChange={(event) => setRemoteOnly(event.target.checked)}
+                className="h-4 w-4 accent-black"
+              />
+              <span className="text-sm font-semibold text-black">
+                Remote only
+              </span>
+            </label>
           </div>
         ) : null}
 
         {message ? (
-          <p className="rounded-[var(--radius)] border border-black/20 bg-[#fff6c7] px-4 py-3 text-sm">
+          <p className="rounded-(--radius) border border-black/20 bg-[#fff6c7] px-4 py-3 text-sm">
             {message}
           </p>
         ) : null}
 
         {error ? (
-          <p className="rounded-[var(--radius)] border border-[var(--color-error)] bg-[var(--color-error-container)] px-4 py-3 text-sm text-[var(--color-on-error-container)]">
+          <p className="rounded-(--radius) border border-(--color-error) bg-(--color-error-container) px-4 py-3 text-sm text-(--color-on-error-container)">
             {error}
           </p>
         ) : null}
@@ -313,9 +346,13 @@ export function SignupAuthForm() {
               onClick={sendOtp}
               disabled={!email || isSendingOtp}
               type="button"
-              className="border-2 border-black bg-black text-[var(--color-tertiary)] hover:bg-[var(--color-tertiary)] hover:text-black"
+              className="border-2 border-black bg-black text-(--color-tertiary) hover:bg-(--color-tertiary) hover:text-black"
             >
-              {isSendingOtp ? "Sending..." : "Send OTP"}
+              {isSendingOtp
+                ? "Sending..."
+                : isLoginMode
+                  ? "Send Login Code"
+                  : "Send OTP"}
             </Button>
           ) : (
             <>
@@ -324,9 +361,13 @@ export function SignupAuthForm() {
                 onClick={verifyOtp}
                 disabled={otp.length < 6 || otp.length > 8 || isVerifyingOtp}
                 type="button"
-                className="border-2 border-black bg-black text-[var(--color-tertiary)] hover:bg-[var(--color-tertiary)] hover:text-black"
+                className="border-2 border-black bg-black text-(--color-tertiary) hover:bg-(--color-tertiary) hover:text-black"
               >
-                {isVerifyingOtp ? "Verifying..." : "Verify & Create Account"}
+                {isVerifyingOtp
+                  ? "Verifying..."
+                  : isLoginMode
+                    ? "Verify & Log In"
+                    : "Verify & Create Account"}
               </Button>
               <Button
                 variant="secondary"
@@ -335,7 +376,7 @@ export function SignupAuthForm() {
                 type="button"
                 disabled={isVerifyingOtp}
               >
-                Edit Email
+                {isLoginMode ? "Edit Email" : "Edit Details"}
               </Button>
             </>
           )}

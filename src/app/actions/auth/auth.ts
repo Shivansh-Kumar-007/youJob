@@ -1,13 +1,14 @@
 "use server";
 
-import prisma from "@/lib/prisma";
+import prisma from "@/lib/third-party-clients/prisma-client";
 import {
   getAccessTokenFromCookies,
   setAuthSessionCookies,
-} from "@/lib/auth-session";
-import { ingestResumeForUser } from "@/lib/resume-ingest";
-import { createSupabaseAdminClient } from "@/lib/supabase-admin";
-import { createSupabaseServerClient } from "@/lib/supabase-server";
+} from "@/lib/server/auth/auth-session";
+import { ingestJobsForUserProfile } from "@/app/actions/search/pipeline";
+import { ingestResumeForUser } from "./resume-ingest";
+import { createSupabaseAdminClient } from "@/lib/third-party-clients/supabase/admin";
+import { createSupabaseServerClient } from "@/lib/third-party-clients/supabase/server";
 import {
   sendOtpInputSchema,
   sendOtpOutputSchema,
@@ -33,193 +34,162 @@ function sanitizeFileName(fileName: string): string {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
-export async function sendOtpAction(input: SendOtpInput): Promise<SendOtpOutput> {
-  const parsed = sendOtpInputSchema.parse(input);
-  const supabase = createSupabaseServerClient();
+import { actionClient } from "@/lib/next-safe-action/client";
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.email,
-    options: {
-      shouldCreateUser: true,
-      data: parsed.fullName ? { full_name: parsed.fullName } : undefined,
-    },
+export const sendOtpAction = actionClient
+  .schema(sendOtpInputSchema)
+  .action(async ({ parsedInput: parsed }) => {
+    const supabase = createSupabaseServerClient();
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: parsed.email,
+      options: {
+        shouldCreateUser: true,
+        data: parsed.fullName ? { full_name: parsed.fullName } : undefined,
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return {
+      success: true as const,
+      message: "OTP sent to email",
+    };
   });
 
-  if (error) {
-    throw new Error(error.message);
-  }
+export const verifyOtpAction = actionClient
+  .schema(verifyOtpInputSchema)
+  .action(async ({ parsedInput: parsed }) => {
+    const supabase = createSupabaseServerClient();
 
-  return sendOtpOutputSchema.parse({
-    success: true,
-    message: "OTP sent to email",
-  });
-}
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: parsed.email,
+      token: parsed.token,
+      type: "email",
+    });
 
-export async function verifyOtpAction(
-  input: VerifyOtpInput,
-): Promise<VerifyOtpOutput> {
-  const parsed = verifyOtpInputSchema.parse(input);
-  const supabase = createSupabaseServerClient();
+    if (error) {
+      throw new Error(error.message);
+    }
 
-  const { data, error } = await supabase.auth.verifyOtp({
-    email: parsed.email,
-    token: parsed.token,
-    type: "email",
-  });
+    if (!data.user || !data.session) {
+      throw new Error("Verification succeeded but no user/session returned.");
+    }
 
-  if (error) {
-    throw new Error(error.message);
-  }
+    const fullName =
+      typeof data.user.user_metadata?.full_name === "string"
+        ? data.user.user_metadata.full_name
+        : undefined;
 
-  if (!data.user || !data.session) {
-    throw new Error("Verification succeeded but no user/session returned.");
-  }
+    const appUser = await prisma.user.upsert({
+      where: { email: data.user.email || parsed.email },
+      update: { fullName },
+      create: {
+        email: data.user.email || parsed.email,
+        fullName,
+      },
+    });
 
-  const fullName =
-    typeof data.user.user_metadata?.full_name === "string"
-      ? data.user.user_metadata.full_name
-      : undefined;
-
-  const appUser = await prisma.user.upsert({
-    where: { email: data.user.email || parsed.email },
-    update: { fullName },
-    create: {
-      email: data.user.email || parsed.email,
-      fullName,
-    },
-  });
-
-  await setAuthSessionCookies({
-    accessToken: data.session.access_token,
-    refreshToken: data.session.refresh_token,
-    expiresAt: data.session.expires_at ?? null,
-  });
-
-  return verifyOtpOutputSchema.parse({
-    success: true,
-    user: {
-      id: appUser.id,
-      email: appUser.email,
-      fullName: appUser.fullName,
-    },
-    session: {
+    await setAuthSessionCookies({
       accessToken: data.session.access_token,
       refreshToken: data.session.refresh_token,
       expiresAt: data.session.expires_at ?? null,
-    },
-  });
-}
+      email: data.user.email || parsed.email,
+    });
 
-export async function createResumeSignedUploadUrlAction(input: {
-  accessToken?: string;
-  upload: CreateResumeUploadUrlInput;
-}): Promise<CreateResumeUploadUrlOutput> {
-  const accessToken =
-    input.accessToken?.trim() || (await getAccessTokenFromCookies());
-  if (!accessToken) {
-    throw new Error("Missing access token");
-  }
-
-  const upload = createResumeUploadUrlInputSchema.parse(input.upload);
-  const supabase = createSupabaseServerClient();
-  const { data: authData, error: authError } = await supabase.auth.getUser(
-    accessToken,
-  );
-
-  if (authError || !authData.user) {
-    throw new Error("Unauthorized");
-  }
-
-  const bucket =
-    process.env.SUPABASE_RESUME_BUCKET ||
-    process.env.NEXT_PUBLIC_SUPABASE_RESUME_BUCKET ||
-    "resumes";
-
-  const ext = upload.fileName.includes(".")
-    ? upload.fileName.split(".").pop()
-    : "pdf";
-  const path = `users/${authData.user.id}/resume-${Date.now()}.${sanitizeFileName(
-    ext || "pdf",
-  )}`;
-
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin.storage
-    .from(bucket)
-    .createSignedUploadUrl(path);
-
-  if (error || !data) {
-    throw new Error(error?.message || "Failed to create signed upload URL");
-  }
-
-  return createResumeUploadUrlOutputSchema.parse({
-    success: true,
-    bucket,
-    path: data.path,
-    token: data.token,
-  });
-}
-
-export async function saveResumeAction(input: {
-  accessToken?: string;
-  resume: SaveResumeInput;
-}): Promise<SaveResumeOutput> {
-  const accessToken =
-    input.accessToken?.trim() || (await getAccessTokenFromCookies());
-  if (!accessToken) {
-    throw new Error("Missing access token");
-  }
-
-  const resume = saveResumeInputSchema.parse(input.resume);
-  const supabase = createSupabaseServerClient();
-  const { data: authData, error: authError } = await supabase.auth.getUser(
-    accessToken,
-  );
-
-  if (authError || !authData.user?.email) {
-    throw new Error("Unauthorized");
-  }
-
-  const appUser = await prisma.user.upsert({
-    where: { email: authData.user.email },
-    update: {
-      fullName:
-        typeof authData.user.user_metadata?.full_name === "string"
-          ? authData.user.user_metadata.full_name
-          : undefined,
-    },
-    create: {
-      email: authData.user.email,
-      fullName:
-        typeof authData.user.user_metadata?.full_name === "string"
-          ? authData.user.user_metadata.full_name
-          : null,
-    },
+    return {
+      success: true as const,
+      user: {
+        id: appUser.id,
+        email: appUser.email,
+        fullName: appUser.fullName,
+      },
+      session: {
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+        expiresAt: data.session.expires_at ?? null,
+      },
+    };
   });
 
-  await prisma.userProfile.upsert({
-    where: { userId: appUser.id },
-    update: {
+import { authenticatedActionClient } from "@/lib/next-safe-action/client";
+
+export const createResumeSignedUploadUrlAction = authenticatedActionClient
+  .schema(createResumeUploadUrlInputSchema)
+  .action(async ({ parsedInput: upload, ctx }) => {
+    const userId = ctx.userId!;
+
+    const bucket =
+      process.env.SUPABASE_RESUME_BUCKET ||
+      process.env.NEXT_PUBLIC_SUPABASE_RESUME_BUCKET ||
+      "resumes";
+
+    const ext = upload.fileName.includes(".")
+      ? upload.fileName.split(".").pop()
+      : "pdf";
+    const path = `users/${userId}/resume-${Date.now()}.${sanitizeFileName(
+      ext || "pdf"
+    )}`;
+
+    const admin = createSupabaseAdminClient();
+    const { data, error } = await admin.storage
+      .from(bucket)
+      .createSignedUploadUrl(path);
+
+    if (error || !data) {
+      throw new Error(error?.message || "Failed to create signed upload URL");
+    }
+
+    return {
+      success: true as const,
+      bucket,
+      path: data.path,
+      token: data.token,
+    };
+  });
+
+export const saveResumeAction = authenticatedActionClient
+  .schema(saveResumeInputSchema)
+  .action(async ({ parsedInput: resume, ctx }) => {
+    const userId = ctx.userId!;
+    const userEmail = ctx.userEmail!;
+
+    await prisma.userProfile.upsert({
+      where: { userId },
+      update: {
+        resumeUrl: resume.resumePath,
+        preferredLocations: resume.preferredLocation
+          ? [resume.preferredLocation]
+          : [],
+        remoteOnly: resume.remoteOnly ?? false,
+      },
+      create: {
+        userId,
+        resumeUrl: resume.resumePath,
+        preferredLocations: resume.preferredLocation
+          ? [resume.preferredLocation]
+          : [],
+        remoteOnly: resume.remoteOnly ?? false,
+      },
+    });
+
+    const bucket =
+      process.env.SUPABASE_RESUME_BUCKET ||
+      process.env.NEXT_PUBLIC_SUPABASE_RESUME_BUCKET ||
+      "resumes";
+    await ingestResumeForUser({
+      userId,
+      resumePath: resume.resumePath,
+      bucket,
+    });
+
+    await ingestJobsForUserProfile(userId);
+
+    return {
+      success: true,
+      userId,
       resumeUrl: resume.resumePath,
-    },
-    create: {
-      userId: appUser.id,
-      resumeUrl: resume.resumePath,
-    },
+    };
   });
-
-  const bucket =
-    process.env.SUPABASE_RESUME_BUCKET ||
-    process.env.NEXT_PUBLIC_SUPABASE_RESUME_BUCKET ||
-    "resumes";
-  await ingestResumeForUser({
-    userId: appUser.id,
-    resumePath: resume.resumePath,
-    bucket,
-  });
-
-  return saveResumeOutputSchema.parse({
-    success: true,
-    userId: appUser.id,
-    resumeUrl: resume.resumePath,
-  });
-}

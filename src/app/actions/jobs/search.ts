@@ -3,16 +3,13 @@
 import { generateText } from "ai";
 import { geminiProvider } from "@/lib/third-party-clients/gemini";
 import { assertInternalApiKeyAuth } from "@/lib/server/auth/internal-api-auth";
-import {
-  runJobDiscovery,
-  type JobDiscoveryItem,
-} from "@/app/actions/job-discovery";
+import { runJobDiscovery, type JobDiscoveryItem } from "./discovery";
 import {
   webJobSearchInputSchema,
   webJobSearchOutputSchema,
   type WebJobSearchInput,
   type WebJobSearchOutput,
-} from "@/app/actions/schemas";
+} from "./schemas";
 
 type JobMatchAnalysisInput = {
   jobTitles: string[];

@@ -1,137 +1,163 @@
 import type { Metadata } from "next";
-import { absoluteUrl } from "@/lib/site";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { absoluteUrl } from "@/lib/utils/site";
+import { getJobsPageData } from "@/app/actions/jobs/data";
+import { SearchRefreshControl } from "@/ui/product-components/search-refresh-control";
+import { DashboardEffects } from "@/ui/product-components/dashboard-effects";
+import { Navigation } from "@/ui/product-components/navigation";
 
 export const metadata: Metadata = {
   title: "Ranked Jobs",
   description:
-    "Browse AI-ranked job matches, review salary and location filters, and open source application pages with confidence.",
+    "Browse the latest jobs saved from your resume-driven search runs.",
   alternates: {
     canonical: absoluteUrl("/jobs"),
   },
 };
 
-// Mock stats data - replace with real Prisma queries when DB is configured
-const mockStats = {
-  totalJobs: 12543,
-  activeUsers: 1847,
-  paidUsers: 342,
-  agentsRunning: 23,
-};
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ celebrate?: string }>;
+}) {
+  const { user, latestSearchRun } = await getJobsPageData();
+  const resolvedSearchParams = (await searchParams) || {};
+  const jobs = latestSearchRun?.results || [];
+  const profile = user.profile;
 
-export default function JobsPage() {
   return (
-    <main className="page-shell py-10 md:py-14">
-      {/* Live Signal Stats Header */}
-      <header className="mb-12">
-        <div className="mb-6 flex items-center gap-2">
-          <div className="h-3 w-3 rounded-full bg-green-500"></div>
-          <p className="label font-mono tracking-widest">LIVE_SIGNAL</p>
-        </div>
-        <div className="mb-8 h-1 w-full bg-(--color-surface-variant)"></div>
-
-        {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Jobs in DB */}
-          <div className="panel rounded-xl p-6">
-            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
-              Jobs in DB
-            </p>
-            <p className="mt-3 text-4xl font-bold text-(--color-primary)">
-              {mockStats.totalJobs.toLocaleString()}
-            </p>
-            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
-              Total indexed
-            </p>
-          </div>
-
-          {/* Active Users */}
-          <div className="panel rounded-xl p-6">
-            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
-              Active Users
-            </p>
-            <p className="mt-3 text-4xl font-bold text-(--color-primary)">
-              {mockStats.activeUsers.toLocaleString()}
-            </p>
-            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
-              Last 30 days
-            </p>
-          </div>
-
-          {/* Paid Users */}
-          <div className="panel rounded-xl p-6">
-            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
-              Paid Users
-            </p>
-            <p className="mt-3 bg-linear-to-r from-amber-400 to-orange-400 bg-clip-text text-4xl font-bold text-transparent">
-              {mockStats.paidUsers.toLocaleString()}
-            </p>
-            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
-              PRO tier
-            </p>
-          </div>
-
-          {/* Live Agents */}
-          <div className="panel rounded-xl p-6">
-            <p className="text-sm font-semibold tracking-wider text-(--color-on-surface-variant) uppercase">
-              Agents Running
-            </p>
-            <div className="mt-3 flex items-center gap-2">
-              <p className="text-4xl font-bold text-green-500">
-                {mockStats.agentsRunning}
-              </p>
-              {mockStats.agentsRunning > 0 && (
-                <span className="h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-              )}
-            </div>
-            <p className="mt-1 text-xs text-(--color-on-surface-variant)">
-              Live processing
-            </p>
-          </div>
-        </div>
-      </header>
-
-      {/* Section Title */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold">Ranked opportunities</h2>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="panel h-fit rounded-xl p-6">
-          <h2 className="mb-5 text-xl font-semibold">Filters</h2>
-          <div className="space-y-5">
-            {[
-              ["Target title", "Director, Head, VP"],
-              ["Location", "Remote, NYC, London"],
-              ["Salary floor", "$180k"],
-              ["Work mode", "Remote only"],
-            ].map(([label, placeholder]) => (
-              <div key={label}>
-                <label className="label mb-2 block">{label}</label>
-                <input
-                  className="w-full rounded border border-[rgba(64,73,68,0.2)] bg-white px-4 py-3 outline-none focus:border-(--color-primary) focus:ring-4 focus:ring-[rgba(43,105,84,0.1)]"
-                  placeholder={placeholder}
-                />
+    <>
+      <Navigation />
+      <main className="bg-page-gradient min-h-screen py-8 md:py-12">
+        <DashboardEffects
+          celebrateSearch={resolvedSearchParams.celebrate === "search"}
+        />
+        <div className="page-shell space-y-8">
+          <section className="rounded-4xl border-[3px] border-black bg-white px-6 py-8 shadow-[16px_16px_0_0_#000000] md:px-10 md:py-10">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-3">
+                <p className="text-xs font-black tracking-[0.24em] text-black/45 uppercase">
+                  Full Jobs View
+                </p>
+                <h1 className="text-[clamp(2.8rem,7vw,5.2rem)] leading-[0.9] font-[1000] tracking-[-0.06em] text-black uppercase italic">
+                  {jobs.length} Live Matches
+                </h1>
+                <p className="max-w-3xl text-lg leading-8 text-black/65">
+                  {profile?.targetTitle
+                    ? `Latest saved roles for ${profile.targetTitle}.`
+                    : "Latest saved roles from your resume-driven search runs."}
+                </p>
               </div>
-            ))}
-          </div>
-        </aside>
-
-        <section>
-          <div className="space-y-4 rounded-xl border border-(--color-surface-variant) p-8 text-center">
-            <p className="text-lg font-semibold text-(--color-on-surface-variant)">
-              Job listings will appear here
-            </p>
-            <p className="text-sm text-(--color-on-surface-variant)">
-              Browse ranked jobs matching your profile
-            </p>
-            <div className="flex justify-center gap-3 pt-4">
-              <Button>Run Fresh Search</Button>
-              <Button variant="secondary">Upload Updated CV</Button>
+              <div className="flex flex-wrap gap-3">
+                <SearchRefreshControl className="border-2 border-black bg-[#facc15] text-black hover:bg-black hover:text-[#facc15]" />
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center border-2 border-black bg-black px-5 py-3 text-sm font-black tracking-[0.14em] text-white uppercase transition-colors hover:bg-[#facc15] hover:text-black"
+                >
+                  Dashboard
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
-      </div>
-    </main>
+          </section>
+
+          <section className="grid gap-6 lg:grid-cols-[280px_1fr]">
+            <aside className="rounded-4xl border-2 border-black bg-[#fff4d7] p-6 shadow-[10px_10px_0_0_#000000]">
+              <p className="text-xs font-black tracking-[0.22em] text-black/50 uppercase">
+                Search Context
+              </p>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <p className="text-xs font-bold tracking-[0.16em] text-black/45 uppercase">
+                    Target Title
+                  </p>
+                  <p className="mt-1 text-xl font-[1000] tracking-tight text-black">
+                    {profile?.targetTitle || "Not parsed yet"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold tracking-[0.16em] text-black/45 uppercase">
+                    Work Mode
+                  </p>
+                  <p className="mt-1 text-sm leading-7 text-black/70">
+                    {profile?.remoteOnly
+                      ? "Remote only"
+                      : "Mixed / location-based"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold tracking-[0.16em] text-black/45 uppercase">
+                    Latest Run
+                  </p>
+                  <p className="mt-1 text-sm leading-7 text-black/70">
+                    {latestSearchRun?.status || "Idle"}
+                  </p>
+                  {latestSearchRun?.errorMessage ? (
+                    <p className="mt-2 text-sm leading-7 text-(--color-error)">
+                      {latestSearchRun.errorMessage}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </aside>
+
+            <section className="rounded-4xl border-2 border-black bg-white p-6 shadow-[14px_14px_0_0_#000000] md:p-8">
+              {jobs.length === 0 ? (
+                <div className="rounded-3xl border-2 border-dashed border-[#d9c88f] bg-[#fff7db] px-6 py-10 text-center">
+                  <p className="text-lg font-semibold text-black">
+                    No jobs yet.
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-black/60">
+                    Run a fresh search to pull in jobs from your saved profile.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {jobs.map(({ job, rank, reason }) => (
+                    <article
+                      key={job.id}
+                      className="bg-card-warm rounded-3xl border-2 border-black p-5"
+                    >
+                      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border-2 border-black bg-[#facc15] px-3 text-sm font-black text-black">
+                              #{rank}
+                            </span>
+                            <h2 className="text-2xl font-[1000] tracking-[-0.04em] text-black">
+                              {job.title}
+                            </h2>
+                          </div>
+                          <p className="text-sm font-bold tracking-[0.08em] text-black/58 uppercase">
+                            {job.company}
+                            {job.location ? ` · ${job.location}` : ""}
+                            {job.locationType ? ` · ${job.locationType}` : ""}
+                          </p>
+                          <p className="max-w-3xl text-sm leading-7 text-black/70">
+                            {job.description.slice(0, 320)}
+                            {job.description.length > 320 ? "..." : ""}
+                          </p>
+                          <p className="text-xs leading-6 text-black/45">
+                            {reason ||
+                              "Imported from your resume-driven search run."}
+                          </p>
+                        </div>
+                        <a
+                          href={job.sourceUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center justify-center border-2 border-black bg-black px-4 py-3 text-xs font-black tracking-[0.14em] text-white uppercase transition-colors hover:bg-[#facc15] hover:text-black"
+                        >
+                          Open Source
+                        </a>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          </section>
+        </div>
+      </main>
+    </>
   );
 }

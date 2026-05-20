@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { getMockJobBySlug, mockJobs } from "@/lib/mock-jobs";
-import { absoluteUrl } from "@/lib/site";
+import { Button } from "@/ui/shared-components/button";
+import { getMockJobBySlug, mockJobs } from "@/lib/utils/mock-jobs";
+import { absoluteUrl } from "@/lib/utils/site";
 
 type PageProps = {
   params: Promise<{ slug: string }>;

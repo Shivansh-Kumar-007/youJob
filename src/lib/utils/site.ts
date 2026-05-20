@@ -15,7 +15,7 @@ export const siteConfig = {
     "AI career agent",
     "high paying remote roles",
     "work from anywhere jobs",
-    "youjob",
+    "youJob",
   ],
 };
 

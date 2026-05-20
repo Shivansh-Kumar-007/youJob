@@ -106,4 +106,18 @@
     text-transform: uppercase;
     color: #000000;
   }
+
+  .bg-page-gradient {
+    background:
+      radial-gradient(
+        circle at top left,
+        rgba(250, 204, 21, 0.22),
+        transparent 26%
+      ),
+      linear-gradient(180deg, #fffaf0 0%, #ffffff 48%, #f8fbff 100%);
+  }
+
+  .bg-card-warm {
+    background: linear-gradient(135deg, #ffffff 0%, #fffef7 100%);
+  }
 }

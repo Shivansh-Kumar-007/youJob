@@ -1,14 +1,10 @@
 import mammoth from "mammoth";
 import { PDFParse } from "pdf-parse";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateObject } from "ai";
-import prisma from "@/lib/prisma";
-import { createSupabaseAdminClient } from "@/lib/supabase-admin";
+import { geminiProvider } from "@/lib/third-party-clients/gemini";
+import prisma from "@/lib/third-party-clients/prisma-client";
+import { createSupabaseAdminClient } from "@/lib/third-party-clients/supabase/admin";
 import { parsedResumeProfileSchema } from "@/app/actions/auth/auth.schema";
-
-const geminiProvider = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
 
 function getExtension(path: string): string {
   const lowerPath = path.toLowerCase();
@@ -20,7 +16,7 @@ function getExtension(path: string): string {
 
 async function extractResumeText(
   fileBuffer: Buffer,
-  extension: string,
+  extension: string
 ): Promise<string> {
   if (extension === "pdf") {
     PDFParse.setWorker("");
@@ -83,9 +79,7 @@ export async function ingestResumeForUser(options: {
   }
 
   const profileResult = await generateObject({
-    model: geminiProvider(
-      process.env.AI_RANKING_MODEL || "gemini-2.5-flash",
-    ),
+    model: geminiProvider(process.env.AI_RANKING_MODEL || "gemini-2.5-flash"),
     schema: parsedResumeProfileSchema,
     prompt: [
       "Extract a structured candidate profile from this CV/resume text.",
@@ -96,13 +90,15 @@ export async function ingestResumeForUser(options: {
   });
 
   const parsed = profileResult.object;
-  const keywords = [...new Set(parsed.keywords.map((keyword) => keyword.trim()))]
+  const keywords = [
+    ...new Set(parsed.keywords.map((keyword) => keyword.trim())),
+  ]
     .filter(Boolean)
     .slice(0, 120)
     .join(", ");
-  const skills = [...new Set(parsed.skills.map((skill) => skill.trim()))].filter(
-    Boolean,
-  );
+  const skills = [
+    ...new Set(parsed.skills.map((skill) => skill.trim())),
+  ].filter(Boolean);
 
   await prisma.userProfile.upsert({
     where: { userId },
